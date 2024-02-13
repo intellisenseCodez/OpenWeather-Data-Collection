@@ -2,47 +2,12 @@
 # Collecting Weather data from OpenWeather.
 
 import requests
-
 import json
 import csv
+import os
 
 
 from secret import OPEN_WEATHER_API_KEY
-
-
-def load_cities(file_path):
-    """ load all cities from json file """
-    try:
-        with open(file=file_path, mode='r') as json_file:
-            data = json.load(json_file)
-        return data
-    except FileNotFoundError as err:
-        print(err)
-    except:
-        print("Error Encountered")
-    
-
-
-
-def get_lat_long(city_name):
-    """ Given a location return the latitude and longitude. """
-    
-    lat, long = None, None
-
-    
-    try:
-        geo_api = f"http://api.openweathermap.org/geo/1.0/direct?q={city_name}&appid={OPEN_WEATHER_API_KEY}"
-        response = requests.get(url = geo_api).json()
-    except:
-        return f"Couldnt connect to {geo_api}."
-    else:
-        # check if the response return atleast an item
-        if len(response) != 0:
-            lat = response[0]['lat']
-            long = response[0]['lon']
-            
-    return (lat, long)
- 
 
 
 def get_weather_data(latitude, longitude):
@@ -82,31 +47,48 @@ def get_weather_data(latitude, longitude):
     
 
 
-
-if __name__ == "__main__":
-
-    cities_data = load_cities('states-and-cities.json')
+def main():
+    
+    scraped_data = 'scraped_data'
     
     # loop through each data in the json object
     with open('nigeria-cities-weather-data.csv', mode='w', newline='', encoding='utf-8') as csv_file:
         
-            fieldnames = ['country','city','latitude','longitude','temp','temp_min','temp_max','pressure','humidity','sea_level','ground_level','wind_speed','wind_degree','sunrise','sunset','rain_1h','rain_3h','timezone','cloud','description']
+            fieldnames = ['country','city','latitude','longitude','temp','temp_min','temp_max','pressure','humidity','sea_level','ground_level','wind_speed','wind_degree','sunrise','sunset','rain_1h','rain_3h','timezone','cloud','description', 'region', 'population']
             
             writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
             writer.writeheader()
-            
-            for data in cities_data:
-                for name in data['cities']:
-                    
-                    # get latitude and longitude of a city
-                    lat, long = get_lat_long(name)[0], get_lat_long(name)[1]
-                    
-                    # print(lat, long)
-                    
-                    if lat != None and long != None:
-                        # get weather dat
-                        info = get_weather_data(latitude=lat, longitude=long) 
-                        writer.writerow(info)
+    
+            if os.path.isdir(scraped_data):
+                # loop through all files in the directory
+                for file in os.listdir(scraped_data):
+                    sample = ['ekiti.json','lagos.json','ogun.json','ondo.json','osun.json','oyo.json']
+                    if file in sample:
+                        file_path = os.path.join(scraped_data,file)
+                        
+                        with open(file=file_path, mode='r') as json_file:
+                            json_data = json.load(json_file)
+                            print(file_path)
+                            for data in json_data: 
+                                if isinstance(data, dict):
+                                    lat = data['lat']
+                                    long = data['long']
+                                    region = data['region']
+                                    population = data['pop est']
+                                    
+                                    if lat != None and long != None:
+                                        data = get_weather_data(latitude=lat, longitude=long)
+                                        if isinstance(data, dict):
+                                            data['region']= region
+                                            data['population'] = population
+
+                                            if isinstance(data, dict):
+                                                writer.writerow(data)
+
+
+if __name__ == "__main__":
+    main()
+    
     
     
                 
