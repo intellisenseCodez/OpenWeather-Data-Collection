@@ -1,19 +1,20 @@
 
 # Collecting Weather data from OpenWeather.
-
 import requests
 import json
 import csv
 import os
 
 
-from secret import OPEN_WEATHER_API_KEY
+from dotenv import load_dotenv
 
 
 def get_weather_data(latitude, longitude):
     """ Given the latitude and longitude of a city return the weather details """
+    
+    API_KEY = os.environ.get('OPEN_WEATHER_API_KEY')
     try:
-        weather_api = f"https://api.openweathermap.org/data/2.5/weather?lat={latitude}&lon={longitude}&appid={OPEN_WEATHER_API_KEY}"
+        weather_api = f"https://api.openweathermap.org/data/2.5/weather?lat={latitude}&lon={longitude}&appid={API_KEY}"
         response = requests.get(url = weather_api).json()
 
         # data collection
@@ -48,6 +49,8 @@ def get_weather_data(latitude, longitude):
 
 
 def main():
+    
+    load_dotenv()
     
     scraped_data = 'scraped_data'
     
