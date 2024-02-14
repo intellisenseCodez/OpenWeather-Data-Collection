@@ -19,8 +19,7 @@ retrieval for each city.
 3. Dependencies:
 Ensure that the required Python libraries are installed. You can install them using the following command:
 
-`shell
-pip install -r requirements.txt
+`pip install -r requirements.txt
 `
 
 ## Usage
